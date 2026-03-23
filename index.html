@@ -212,12 +212,12 @@
       <div class="q">
         <label class="qlabel">Quais dessas situações acontecem no seu negócio hoje? <em>Pode marcar mais de uma</em></label>
         <div class="check-grid">
-          <label class="check-opt" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span>Perco clientes/vendas fora do horário comercial</span></label>
-          <label class="check-opt" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span>Fico sobrecarregado(a) respondendo sempre as mesmas perguntas</span></label>
-          <label class="check-opt" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span>Agendamentos bagunçados, faltas ou esquecimentos frequentes</span></label>
-          <label class="check-opt" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span>Não consigo acompanhar todos os leads que chegam</span></label>
-          <label class="check-opt" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span>Minha equipe perde tempo em tarefas manuais e repetitivas</span></label>
-          <label class="check-opt" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span>Não tenho visibilidade de quanto atendimento gero por dia</span></label>
+          <label class="check-opt" onclick="toggleCheck(this, event)"><input type="checkbox"><div class="check-box"></div><span>Perco clientes/vendas fora do horário comercial</span></label>
+          <label class="check-opt" onclick="toggleCheck(this, event)"><input type="checkbox"><div class="check-box"></div><span>Fico sobrecarregado(a) respondendo sempre as mesmas perguntas</span></label>
+          <label class="check-opt" onclick="toggleCheck(this, event)"><input type="checkbox"><div class="check-box"></div><span>Agendamentos bagunçados, faltas ou esquecimentos frequentes</span></label>
+          <label class="check-opt" onclick="toggleCheck(this, event)"><input type="checkbox"><div class="check-box"></div><span>Não consigo acompanhar todos os leads que chegam</span></label>
+          <label class="check-opt" onclick="toggleCheck(this, event)"><input type="checkbox"><div class="check-box"></div><span>Minha equipe perde tempo em tarefas manuais e repetitivas</span></label>
+          <label class="check-opt" onclick="toggleCheck(this, event)"><input type="checkbox"><div class="check-box"></div><span>Não tenho visibilidade de quanto atendimento gero por dia</span></label>
         </div>
       </div>
       <div class="q">
@@ -229,12 +229,12 @@
       <div class="q">
         <label class="qlabel">Você já usa alguma dessas ferramentas? <em>Pode marcar mais de uma</em></label>
         <div class="check-grid cols2">
-          <label class="check-opt" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span>Google Agenda</span></label>
-          <label class="check-opt" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span>Google Planilhas</span></label>
-          <label class="check-opt" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span>Instagram Business</span></label>
-          <label class="check-opt" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span>Algum sistema de agendamento</span></label>
-          <label class="check-opt" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span>CRM (Pipedrive, HubSpot...)</span></label>
-          <label class="check-opt" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span>Nenhuma dessas</span></label>
+          <label class="check-opt" onclick="toggleCheck(this, event)"><input type="checkbox"><div class="check-box"></div><span>Google Agenda</span></label>
+          <label class="check-opt" onclick="toggleCheck(this, event)"><input type="checkbox"><div class="check-box"></div><span>Google Planilhas</span></label>
+          <label class="check-opt" onclick="toggleCheck(this, event)"><input type="checkbox"><div class="check-box"></div><span>Instagram Business</span></label>
+          <label class="check-opt" onclick="toggleCheck(this, event)"><input type="checkbox"><div class="check-box"></div><span>Algum sistema de agendamento</span></label>
+          <label class="check-opt" onclick="toggleCheck(this, event)"><input type="checkbox"><div class="check-box"></div><span>CRM (Pipedrive, HubSpot...)</span></label>
+          <label class="check-opt" onclick="toggleCheck(this, event)"><input type="checkbox"><div class="check-box"></div><span>Nenhuma dessas</span></label>
         </div>
       </div>
       <div class="nav">
@@ -318,7 +318,10 @@
     });
     el.classList.add('selected');
   }
-  function toggleCheck(el) { el.classList.toggle('selected'); }
+  function toggleCheck(el, e) {
+    e.preventDefault();
+    el.classList.toggle('selected');
+  }
   function selectScale(btn, groupId, val) {
     document.getElementById(groupId).querySelectorAll('.scale-btn').forEach(function(b, i){
       b.classList.toggle('selected', i < val);
