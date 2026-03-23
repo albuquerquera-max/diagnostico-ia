@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diagnóstico de Negócio | Raquel Albuquerque</title>
+  <style>
+    :root {
+      --bg: #0A0E1A; --bg2: #111827; --card: #1E2A3B;
+      --accent: #6C63FF; --cyan: #00D4FF; --green: #34D399;
+      --border: rgba(108,99,255,0.25); --text: #F1F5F9; --muted: #94A3B8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; min-height: 100vh; }
+    .wrap { padding: 40px 20px 64px; max-width: 680px; margin: 0 auto; }
+
+    .header { text-align: center; margin-bottom: 40px; }
+    .brand { font-size: 12px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+    .header h1 { font-size: 26px; font-weight: 700; color: var(--text); margin-bottom: 10px; line-height: 1.3; }
+    .header p { font-size: 14px; color: var(--muted); line-height: 1.7; }
+
+    .step-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; text-align: right; }
+    .progress-bar { background: var(--card); border-radius: 99px; height: 4px; margin-bottom: 36px; overflow: hidden; }
+    .progress-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width 0.4s ease; }
+
+    .step { display: none; }
+    .step.active { display: block; }
+
+    .step-title { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 28px; }
+    .step-num { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0; margin-top: 2px; }
+    .step-title-text h2 { font-size: 18px; font-weight: 700; color: var(--text); }
+    .step-title-text p { font-size: 13px; color: var(--muted); margin-top: 3px; }
+
+    .q { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+    .q label.qlabel { display: block; font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 12px; line-height: 1.5; }
+    .q label.qlabel .req { color: var(--accent); margin-left: 2px; }
+    .q label.qlabel em { font-style: normal; font-size: 12px; color: var(--muted); display: block; margin-top: 4px; font-weight: 400; }
+
+    input[type=text], input[type=tel], textarea, select {
+      width: 100%; background: #0D1524; border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px; padding: 11px 14px; color: var(--text); font-size: 14px;
+      font-family: inherit; outline: none; resize: vertical; transition: border-color 0.2s;
+    }
+    input[type=text]:focus, input[type=tel]:focus, textarea:focus, select:focus { border-color: var(--accent); }
+    select { cursor: pointer; }
+    select option { background: #1E2A3B; }
+    textarea { min-height: 95px; line-height: 1.6; }
+
+    .radio-grid { display: grid; gap: 8px; }
+    .radio-grid.cols2 { grid-template-columns: 1fr 1fr; }
+    .radio-opt { display: flex; align-items: center; gap: 10px; background: #0D1524; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 11px 14px; cursor: pointer; transition: border-color 0.2s, background 0.2s; user-select: none; }
+    .radio-opt:hover { border-color: var(--accent); }
+    .radio-opt.selected { border-color: var(--accent); background: rgba(108,99,255,0.12); }
+    .radio-opt input { display: none; }
+    .radio-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--muted); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, background 0.2s; position: relative; }
+    .radio-opt.selected .radio-dot { border-color: var(--accent); background: var(--accent); }
+    .radio-dot::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: white; opacity: 0; transition: opacity 0.2s; position: absolute; }
+    .radio-opt.selected .radio-dot::after { opacity: 1; }
+    .radio-opt span { font-size: 13px; color: var(--text); line-height: 1.4; }
+
+    .check-grid { display: grid; gap: 8px; }
+    .check-opt { display: flex; align-items: center; gap: 10px; background: #0D1524; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 11px 14px; cursor: pointer; transition: border-color 0.2s, background 0.2s; user-select: none; }
+    .check-opt:hover { border-color: var(--cyan); }
+    .check-opt.selected { border-color: var(--cyan); background: rgba(0,212,255,0.08); }
+    .check-opt input { display: none; }
+    .check-box { width: 16px; height: 16px; border-radius: 4px; border: 2px solid var(--muted); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, background 0.2s; position: relative; }
+    .check-opt.selected .check-box { border-color: var(--cyan); background: var(--cyan); }
+    .check-box::after { content: '✓'; font-size: 10px; color: #0A0E1A; opacity: 0; transition: opacity 0.2s; font-weight: 700; position: absolute; }
+    .check-opt.selected .check-box::after { opacity: 1; }
+    .check-opt span { font-size: 13px; color: var(--text); line-height: 1.4; }
+
+    .scale-row { display: flex; gap: 8px; }
+    .scale-btn { flex: 1; height: 42px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: #0D1524; color: var(--muted); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .scale-btn:hover { border-color: var(--green); color: var(--text); }
+    .scale-btn.selected { border-color: var(--green); background: rgba(52,211,153,0.15); color: var(--green); }
+    .scale-labels { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); margin-top: 7px; }
+
+    .nav { display: flex; gap: 12px; margin-top: 28px; }
+    .btn-back { flex: 0 0 auto; background: transparent; border: 1px solid var(--border); color: var(--muted); border-radius: 8px; padding: 13px 22px; font-size: 14px; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+    .btn-back:hover { border-color: var(--accent); color: var(--text); }
+    .btn-next { flex: 1; background: var(--accent); border: none; color: #fff; border-radius: 8px; padding: 13px 22px; font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.2s; font-family: inherit; }
+    .btn-next:hover { background: #5A52D5; }
+    .btn-submit { flex: 1; background: var(--green); border: none; color: #0A0E1A; border-radius: 8px; padding: 13px 22px; font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.2s; font-family: inherit; }
+    .btn-submit:hover { background: #22C988; }
+
+    .success { text-align: center; padding: 60px 20px; display: none; }
+    .success-icon { width: 72px; height: 72px; border-radius: 50%; background: rgba(52,211,153,0.12); border: 2px solid var(--green); margin: 0 auto 28px; display: flex; align-items: center; justify-content: center; }
+    .success-icon svg { width: 32px; height: 32px; }
+    .success h2 { font-size: 24px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+    .success p { font-size: 14px; color: var(--muted); line-height: 1.7; }
+    .success .sig { margin-top: 24px; font-size: 13px; color: var(--muted); }
+
+    @media (max-width: 480px) {
+      .radio-grid.cols2 { grid-template-columns: 1fr; }
+      .header h1 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <div class="brand"><div class="dot"></div>Raquel Albuquerque | Automações &amp; IA</div>
+    <h1>Formulário de Diagnóstico</h1>
+    <p>Responda em 3–5 minutos para que eu possa entender seu negócio<br>e preparar a melhor proposta para você.</p>
+  </div>
+
+  <div class="step-label" id="step-label">Etapa 1 de 4</div>
+  <div class="progress-bar"><div class="progress-fill" id="progress" style="width:25%"></div></div>
+
+  <div id="form-body">
+
+    <!-- ETAPA 1 -->
+    <div class="step active" id="step-1">
+      <div class="step-title">
+        <div class="step-num">1</div>
+        <div class="step-title-text"><h2>Sobre você e seu negócio</h2><p>Informações básicas para eu te conhecer melhor</p></div>
+      </div>
+      <div class="q">
+        <label class="qlabel">Nome completo <span class="req">*</span></label>
+        <input type="text" id="nome" placeholder="Seu nome" />
+      </div>
+      <div class="q">
+        <label class="qlabel">Nome do negócio / empresa <span class="req">*</span></label>
+        <input type="text" id="empresa" placeholder="Ex: Salão da Ana, Clínica Saúde Viva..." />
+      </div>
+      <div class="q">
+        <label class="qlabel">Qual é o seu segmento? <span class="req">*</span></label>
+        <select id="segmento">
+          <option value="">Selecione...</option>
+          <option>Saúde e estética (clínica, salão, personal...)</option>
+          <option>Alimentação (restaurante, delivery, confeitaria...)</option>
+          <option>Serviços (advocacia, contabilidade, consultoria...)</option>
+          <option>Comércio / varejo</option>
+          <option>Educação / cursos</option>
+          <option>Imóveis</option>
+          <option>Segurança e monitoramento</option>
+          <option>Outro</option>
+        </select>
+      </div>
+      <div class="q">
+        <label class="qlabel">Quantas pessoas trabalham no seu negócio?</label>
+        <div class="radio-grid cols2">
+          <label class="radio-opt" onclick="selectRadio(this,'tamanho')"><input type="radio" name="tamanho"><div class="radio-dot"></div><span>Só eu</span></label>
+          <label class="radio-opt" onclick="selectRadio(this,'tamanho')"><input type="radio" name="tamanho"><div class="radio-dot"></div><span>2 a 5 pessoas</span></label>
+          <label class="radio-opt" onclick="selectRadio(this,'tamanho')"><input type="radio" name="tamanho"><div class="radio-dot"></div><span>6 a 15 pessoas</span></label>
+          <label class="radio-opt" onclick="selectRadio(this,'tamanho')"><input type="radio" name="tamanho"><div class="radio-dot"></div><span>Mais de 15</span></label>
+        </div>
+      </div>
+      <div class="nav">
+        <button class="btn-next" onclick="goTo(2)">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- ETAPA 2 -->
+    <div class="step" id="step-2">
+      <div class="step-title">
+        <div class="step-num">2</div>
+        <div class="step-title-text"><h2>Sua situação atual no WhatsApp</h2><p>Me conta como funciona hoje o atendimento</p></div>
+      </div>
+      <div class="q">
+        <label class="qlabel">Você já usa o WhatsApp Business no seu negócio?</label>
+        <div class="radio-grid">
+          <label class="radio-opt" onclick="selectRadio(this,'wabiz')"><input type="radio" name="wabiz"><div class="radio-dot"></div><span>Sim, uso o WhatsApp Business (app gratuito)</span></label>
+          <label class="radio-opt" onclick="selectRadio(this,'wabiz')"><input type="radio" name="wabiz"><div class="radio-dot"></div><span>Não, só uso o WhatsApp normal</span></label>
+          <label class="radio-opt" onclick="selectRadio(this,'wabiz')"><input type="radio" name="wabiz"><div class="radio-dot"></div><span>Uso alguma plataforma de atendimento (ex: Zenvia, Blip...)</span></label>
+        </div>
+      </div>
+      <div class="q">
+        <label class="qlabel">Você tem ou tem acesso ao Facebook Business Manager?
+          <em>É o gerenciador de anúncios/páginas da Meta — necessário para conectar a API oficial do WhatsApp.</em>
+        </label>
+        <div class="radio-grid cols2">
+          <label class="radio-opt" onclick="selectRadio(this,'fbiz')"><input type="radio" name="fbiz"><div class="radio-dot"></div><span>Sim, tenho acesso</span></label>
+          <label class="radio-opt" onclick="selectRadio(this,'fbiz')"><input type="radio" name="fbiz"><div class="radio-dot"></div><span>Não tenho</span></label>
+          <label class="radio-opt" onclick="selectRadio(this,'fbiz')"><input type="radio" name="fbiz"><div class="radio-dot"></div><span>Não sei o que é</span></label>
+          <label class="radio-opt" onclick="selectRadio(this,'fbiz')"><input type="radio" name="fbiz"><div class="radio-dot"></div><span>Preciso verificar</span></label>
+        </div>
+      </div>
+      <div class="q">
+        <label class="qlabel">Você tem disponibilidade para usar um número novo de WhatsApp para o agente de IA?
+          <em>O agente precisa de um número exclusivo — pode ser um chip novo ou número virtual.</em>
+        </label>
+        <div class="radio-grid">
+          <label class="radio-opt" onclick="selectRadio(this,'numero')"><input type="radio" name="numero"><div class="radio-dot"></div><span>Sim, consigo um número novo sem problema</span></label>
+          <label class="radio-opt" onclick="selectRadio(this,'numero')"><input type="radio" name="numero"><div class="radio-dot"></div><span>Prefiro usar meu número atual (precisaremos conversar sobre isso)</span></label>
+          <label class="radio-opt" onclick="selectRadio(this,'numero')"><input type="radio" name="numero"><div class="radio-dot"></div><span>Ainda não sei / tenho dúvidas</span></label>
+        </div>
+      </div>
+      <div class="q">
+        <label class="qlabel">Quantas mensagens de clientes seu WhatsApp recebe por dia, em média?</label>
+        <div class="radio-grid cols2">
+          <label class="radio-opt" onclick="selectRadio(this,'volume')"><input type="radio" name="volume"><div class="radio-dot"></div><span>Menos de 10</span></label>
+          <label class="radio-opt" onclick="selectRadio(this,'volume')"><input type="radio" name="volume"><div class="radio-dot"></div><span>10 a 30</span></label>
+          <label class="radio-opt" onclick="selectRadio(this,'volume')"><input type="radio" name="volume"><div class="radio-dot"></div><span>30 a 80</span></label>
+          <label class="radio-opt" onclick="selectRadio(this,'volume')"><input type="radio" name="volume"><div class="radio-dot"></div><span>Mais de 80</span></label>
+        </div>
+      </div>
+      <div class="nav">
+        <button class="btn-back" onclick="goTo(1)">← Voltar</button>
+        <button class="btn-next" onclick="goTo(3)">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- ETAPA 3 -->
+    <div class="step" id="step-3">
+      <div class="step-title">
+        <div class="step-num">3</div>
+        <div class="step-title-text"><h2>Suas dores e objetivos</h2><p>O que você quer resolver e alcançar</p></div>
+      </div>
+      <div class="q">
+        <label class="qlabel">Quais dessas situações acontecem no seu negócio hoje? <em>Pode marcar mais de uma</em></label>
+        <div class="check-grid">
+          <label class="check-opt" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span>Perco clientes/vendas fora do horário comercial</span></label>
+          <label class="check-opt" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span>Fico sobrecarregado(a) respondendo sempre as mesmas perguntas</span></label>
+          <label class="check-opt" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span>Agendamentos bagunçados, faltas ou esquecimentos frequentes</span></label>
+          <label class="check-opt" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span>Não consigo acompanhar todos os leads que chegam</span></label>
+          <label class="check-opt" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span>Minha equipe perde tempo em tarefas manuais e repetitivas</span></label>
+          <label class="check-opt" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span>Não tenho visibilidade de quanto atendimento gero por dia</span></label>
+        </div>
+      </div>
+      <div class="q">
+        <label class="qlabel">O que você quer que a IA faça pelo seu negócio? <span class="req">*</span>
+          <em>Descreva com suas palavras — sem precisar usar termos técnicos</em>
+        </label>
+        <textarea id="objetivo" placeholder="Ex: Quero que responda clientes automaticamente no WhatsApp quando estou atendendo, capture o nome e interesse deles e me avise. Também quero que faça agendamentos sozinho..."></textarea>
+      </div>
+      <div class="q">
+        <label class="qlabel">Você já usa alguma dessas ferramentas? <em>Pode marcar mais de uma</em></label>
+        <div class="check-grid cols2">
+          <label class="check-opt" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span>Google Agenda</span></label>
+          <label class="check-opt" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span>Google Planilhas</span></label>
+          <label class="check-opt" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span>Instagram Business</span></label>
+          <label class="check-opt" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span>Algum sistema de agendamento</span></label>
+          <label class="check-opt" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span>CRM (Pipedrive, HubSpot...)</span></label>
+          <label class="check-opt" onclick="toggleCheck(this)"><input type="checkbox"><div class="check-box"></div><span>Nenhuma dessas</span></label>
+        </div>
+      </div>
+      <div class="nav">
+        <button class="btn-back" onclick="goTo(2)">← Voltar</button>
+        <button class="btn-next" onclick="goTo(4)">Continuar →</button>
+      </div>
+    </div>
+
+    <!-- ETAPA 4 -->
+    <div class="step" id="step-4">
+      <div class="step-title">
+        <div class="step-num">4</div>
+        <div class="step-title-text"><h2>Últimos detalhes</h2><p>Para eu montar a proposta ideal para você</p></div>
+      </div>
+      <div class="q">
+        <label class="qlabel">Qual é a maior dificuldade do seu negócio hoje? <span class="req">*</span>
+          <em>Pode ser qualquer coisa — não precisa estar relacionada à tecnologia</em>
+        </label>
+        <textarea id="dificuldade" placeholder="Ex: Fico sem tempo para atender todo mundo, perco vendas no fim de semana, minha equipe passa horas em tarefas que poderiam ser automáticas..."></textarea>
+      </div>
+      <div class="q">
+        <label class="qlabel">Qual prazo você imagina para começar?</label>
+        <div class="radio-grid cols2">
+          <label class="radio-opt" onclick="selectRadio(this,'prazo')"><input type="radio" name="prazo"><div class="radio-dot"></div><span>O quanto antes</span></label>
+          <label class="radio-opt" onclick="selectRadio(this,'prazo')"><input type="radio" name="prazo"><div class="radio-dot"></div><span>1 a 2 meses</span></label>
+          <label class="radio-opt" onclick="selectRadio(this,'prazo')"><input type="radio" name="prazo"><div class="radio-dot"></div><span>Ainda estou pesquisando</span></label>
+          <label class="radio-opt" onclick="selectRadio(this,'prazo')"><input type="radio" name="prazo"><div class="radio-dot"></div><span>Depende da proposta</span></label>
+        </div>
+      </div>
+      <div class="q">
+        <label class="qlabel">O quanto você está aberto(a) para mudanças tecnológicas no seu negócio?</label>
+        <div class="scale-row" id="scale-abertura">
+          <button class="scale-btn" onclick="selectScale(this,'scale-abertura',1)">1</button>
+          <button class="scale-btn" onclick="selectScale(this,'scale-abertura',2)">2</button>
+          <button class="scale-btn" onclick="selectScale(this,'scale-abertura',3)">3</button>
+          <button class="scale-btn" onclick="selectScale(this,'scale-abertura',4)">4</button>
+          <button class="scale-btn" onclick="selectScale(this,'scale-abertura',5)">5</button>
+        </div>
+        <div class="scale-labels"><span>Prefiro o que conheço</span><span>Totalmente aberto(a)</span></div>
+      </div>
+      <div class="q">
+        <label class="qlabel">Alguma dúvida ou informação extra que queira compartilhar?</label>
+        <textarea id="extra" placeholder="Pode escrever à vontade — qualquer detalhe ajuda na hora de montar a proposta..."></textarea>
+      </div>
+      <div class="q">
+        <label class="qlabel">Seu WhatsApp para contato <span class="req">*</span></label>
+        <input type="tel" id="whats" placeholder="(41) 99999-9999" />
+      </div>
+      <div class="nav">
+        <button class="btn-back" onclick="goTo(3)">← Voltar</button>
+        <button class="btn-submit" onclick="submitForm()">Enviar diagnóstico ✓</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="success" id="success">
+    <div class="success-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+    <h2>Recebido! Obrigada 🙌</h2>
+    <p>Vou analisar suas respostas e entrar em contato em breve<br>pelo WhatsApp para conversarmos sobre as melhores soluções<br>para o seu negócio.</p>
+    <p class="sig">— Raquel Albuquerque | Automações &amp; IA</p>
+  </div>
+
+</div>
+<script>
+  function goTo(n) {
+    document.querySelectorAll('.step').forEach(function(s){ s.classList.remove('active'); });
+    var el = document.getElementById('step-' + n);
+    if (el) el.classList.add('active');
+    document.getElementById('step-label').textContent = 'Etapa ' + n + ' de 4';
+    document.getElementById('progress').style.width = (n * 25) + '%';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+  function selectRadio(el, name) {
+    document.querySelectorAll('[name="' + name + '"]').forEach(function(r){
+      r.closest('.radio-opt').classList.remove('selected');
+    });
+    el.classList.add('selected');
+  }
+  function toggleCheck(el) { el.classList.toggle('selected'); }
+  function selectScale(btn, groupId, val) {
+    document.getElementById(groupId).querySelectorAll('.scale-btn').forEach(function(b, i){
+      b.classList.toggle('selected', i < val);
+    });
+  }
+  function getChecked(selector) {
+    var items = [];
+    document.querySelectorAll(selector + '.selected span').forEach(function(s){ items.push(s.textContent); });
+    return items.join(', ') || 'Nenhum';
+  }
+  function getRadio(name) {
+    var el = document.querySelector('[name="' + name + '"].selected span');
+    return el ? el.textContent : 'Não respondido';
+  }
+  function getScale(groupId) {
+    var btns = document.getElementById(groupId).querySelectorAll('.scale-btn.selected');
+    return btns.length > 0 ? btns.length + '/5' : 'Não respondido';
+  }
+
+  function submitForm() {
+    var nome = document.getElementById('nome').value.trim();
+    var whats = document.getElementById('whats').value.trim();
+    if (!nome) { alert('Por favor, preencha seu nome.'); goTo(1); return; }
+    if (!whats) { alert('Por favor, informe seu WhatsApp.'); return; }
+
+    var data = new FormData();
+    data.append('Nome', nome);
+    data.append('Empresa', document.getElementById('empresa').value.trim());
+    data.append('Segmento', document.getElementById('segmento').value);
+    data.append('Tamanho da equipe', getRadio('tamanho'));
+    data.append('Usa WhatsApp Business', getRadio('wabiz'));
+    data.append('Facebook Business Manager', getRadio('fbiz'));
+    data.append('Número novo para agente', getRadio('numero'));
+    data.append('Volume de mensagens/dia', getRadio('volume'));
+    data.append('Situações no negócio', getChecked('#step-3 .check-grid:first-of-type .check-opt'));
+    data.append('O que quer que a IA faça', document.getElementById('objetivo').value.trim());
+    data.append('Ferramentas que já usa', getChecked('#step-3 .check-grid:last-of-type .check-opt'));
+    data.append('Maior dificuldade', document.getElementById('dificuldade').value.trim());
+    data.append('Prazo para começar', getRadio('prazo'));
+    data.append('Abertura para tecnologia', getScale('scale-abertura'));
+    data.append('Informações extras', document.getElementById('extra').value.trim());
+    data.append('WhatsApp', whats);
+    data.append('_subject', 'Novo diagnóstico: ' + nome);
+    data.append('_replyto', whats);
+
+    var btn = document.querySelector('.btn-submit');
+    btn.textContent = 'Enviando...';
+    btn.disabled = true;
+
+    fetch('SUA_URL_DO_APPS_SCRIPT_AQUI', {
+      method: 'POST',
+      body: data,
+      headers: { 'Accept': 'application/json' },
+      mode: 'no-cors'
+    })
+    .then(function() {
+      document.getElementById('form-body').style.display = 'none';
+      document.getElementById('success').style.display = 'block';
+      document.querySelector('.progress-fill').style.width = '100%';
+      document.getElementById('step-label').textContent = 'Concluído!';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    })
+    .catch(function() {
+      alert('Erro de conexão. Verifique sua internet e tente novamente.');
+      btn.textContent = 'Enviar diagnóstico ✓';
+      btn.disabled = false;
+    });
+  }
+</script>
+</body>
+</html>
